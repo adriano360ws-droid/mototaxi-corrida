@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Comprovante de Corrida — Moto Táxi Adriano</title>
+
+<style>
+:root{
+  --bg:#0f0f0f;
+  --card:#1a1a1a;
+  --muted:#bbb;
+  --accent:#19c23b;
+  --text:#fff
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,Arial,Helvetica,sans-serif;
+  margin:0;
+  padding:18px
+}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-size:20px;margin:0 0 12px}
+label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
+input,select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:#141414;
+  color:#fff;
+  font-size:16px
+}
+.btn{
+  padding:12px 18px;
+  border-radius:12px;
+  border:none;
+  font-weight:700;
+  cursor:pointer
+}
+.btn-green{background:var(--accent);color:#fff}
+.result{
+  font-size:56px;
+  color:#00ff66;
+  text-align:center;
+  margin:20px 0;
+  font-weight:800
+}
+.card{
+  background:var(--card);
+  padding:16px;
+  border-radius:14px;
+  margin-top:12px;
+  color:var(--muted)
+}
+.small{font-size:13px}
+.maps{display:flex;gap:10px;margin-top:14px}
+.maps button{
+  flex:1;
+  background:#333;
+  border-radius:10px;
+  padding:12px;
+  border:none;
+  color:#fff
+}
+.qrwrap{
+  margin:14px auto;
+  border-radius:14px;
+  padding:12px;
+  background:#fff;
+  width:320px;
+  height:320px;
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.qrimg{max-width:100%;max-height:100%}
+footer{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:18px;
+  text-align:center
+}
+hr{border:none;border-top:1px solid #333;margin:10px 0}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<h1>Comprovante de Corrida — Moto Táxi Adriano</h1>
+
+<div class="card">
+<b>Adriano Alves de Oliveira Souza</b><br>
+📞 86981291332<br>
+🏍️ Honda CG 125 Fan — Preta • Placa: QRP5G89<br>
+PIX: <b>+5586981291332</b>
+</div>
+
+<label>Tipo de tarifa</label>
+<select id="tarifaTipo">
+  <option value="dia">Tarifa Dia — R$ 3,00 / km R$ 1,50</option>
+  <option value="noite">Tarifa Noite — R$ 3,50 / km R$ 1,75</option>
+</select>
+
+<label>Destino (obrigatório)</label>
+<input id="destino">
+
+<label>Distância (KM)</label>
+<input id="km">
+
+<button class="btn btn-green" id="btnCalc">Calcular & Gerar</button>
+
+<div id="resultado" class="result">R$ 0,00</div>
+<div id="detalhes" class="card small"></div>
+
+<div class="maps">
+<button id="btnMaps">📍 Google Maps</button>
+<button id="btnWaze">🌍 Waze</button>
+</div>
+
+<h3 style="text-align:center;margin-top:18px">PIX (valor automático)</h3>
+<div class="qrwrap">
+<img id="qrImg" class="qrimg">
+</div>
+
+<div class="card small">
+<h3>Histórico de Corridas</h3>
+<div id="hist"></div>
+<button onclick="limparHistorico()">Limpar histórico</button>
+</div>
+
+<button onclick="compartilhar()" class="btn btn-green">📲 Enviar WhatsApp</button>
+
+<footer>Gerado por Moto Táxi — envie ao passageiro só por mensagem (segurança)</footer>
+</div>
+
+<script>
+/* ===== CONFIGURAÇÕES ===== */
+const PIX_KEY_RAW = "86981291332";
+const RECEIVER_NAME = "MOTO TAXI ADRIANO";
+const CITY = "TERESINA";
+const HIST_KEY = "moto_taxi_hist";
+
+const TARIFAS = {
+  dia:{nome:"Tarifa Dia",base:3.00,km:1.50,min:6.00},
+  noite:{nome:"Tarifa Noite",base:3.50,km:1.75,min:7.00}
+};
+
+/* ===== UTIL ===== */
+function arred10(v){ return Math.ceil(v*10)/10; }
+
+function chavePixNormalizada(){
+  return PIX_KEY_RAW.startsWith("55")
+    ? "+" + PIX_KEY_RAW
+    : "+55" + PIX_KEY_RAW;
+}
+
+/* ===== CRC16 PIX ===== */
+function crc16(payload){
+  let crc=0xFFFF;
+  for(let i=0;i<payload.length;i++){
+    crc^=payload.charCodeAt(i)<<8;
+    for(let j=0;j<8;j++){
+      crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;
+    }
+  }
+  return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,"0");
+}
+
+/* ===== PIX ===== */
+function gerarPIX(valor){
+  const v=valor.toFixed(2);
+  const nome=RECEIVER_NAME.substring(0,25);
+  const cidade=CITY.substring(0,15);
+  const chave=chavePixNormalizada();
+  const campo=(id,val)=>id+val.length.toString().padStart(2,"0")+val;
+
+  let payload="000201"+
+    campo("26",campo("00","BR.GOV.BCB.PIX")+campo("01",chave))+
+    "52040000"+
+    "5303986"+
+    campo("54",v)+
+    "5802BR"+
+    campo("59",nome)+
+    campo("60",cidade)+
+    campo("62",campo("05","***"))+
+    "6304";
+
+  payload+=crc16(payload);
+  qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent(payload);
+}
+
+/* ===== COMPROVANTE ===== */
+function textoComprovante(h){
+  return `
+🧾 COMPROVANTE MOTO TÁXI ADRIANO<br><br>
+<b>${h.data}</b><br>
+Destino: ${h.destino}<br>
+Adriano Alves de Oliveira Souza<br>
+Tel: 86981291332<br>
+Placa: QRP5G89<br><br>
+${h.detalhe}<br>
+<b>Total: R$ ${h.valor.toFixed(2)}</b><br>
+PIX: ${chavePixNormalizada()}
+`;
+}
+
+/* ===== CÁLCULO ===== */
+function calcular(){
+  const tipo=tarifaTipo.value;
+  const km=parseFloat((kmInput.value||"0").replace(",","."));
+  const destinoTxt=destino.value||"Não informado";
+  const t=TARIFAS[tipo];
+  let total,detalhe;
+
+  if(km>0 && km<=0.9){
+    total=t.min;
+    detalhe=`Tarifa mínima aplicada<br>
+    Até 900 metros<br>
+    ${t.nome}<br>
+    Valor fixo: R$ ${t.min.toFixed(2)}<br>
+    Passando de 900 m inicia tarifa normal`;
+  }else{
+    const bruto=t.base+(km*t.km);
+    total=arred10(bruto);
+    detalhe=`${t.nome}<br>
+    Base: R$ ${t.base.toFixed(2)}<br>
+    Distância: ${km.toFixed(2)} km × R$ ${t.km.toFixed(2)}<br>
+    Subtotal: R$ ${bruto.toFixed(2)}<br>
+    Arredondamento: R$ ${(total-bruto).toFixed(2)}<br>
+    Total final: R$ ${total.toFixed(2)}`;
+  }
+
+  resultado.innerText="R$ "+total.toFixed(2);
+  detalhes.innerHTML=detalhe;
+  gerarPIX(total);
+  salvarHistorico(total,destinoTxt,detalhe);
+}
+
+/* ===== HISTÓRICO ===== */
+function salvarHistorico(valor,destino,detalhe){
+  const d=new Date();
+  const registro={
+    data:d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+
+         " – "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
+    destino,valor,detalhe
+  };
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  h.unshift(registro);
+  localStorage.setItem(HIST_KEY,JSON.stringify(h));
+  renderHist();
+}
+
+function renderHist(){
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  hist.innerHTML=h.length
+    ? h.map(i=>`<div class="card small">${textoComprovante(i)}</div>`).join("")
+    : "<i>Nenhuma corrida registrada</i>";
+}
+
+function limparHistorico(){
+  localStorage.removeItem(HIST_KEY);
+  renderHist();
+}
+
+/* ===== WHATSAPP ===== */
+function compartilhar(){
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
+  if(!h) return;
+  const texto=textoComprovante(h)
+    .replace(/<br>/g,"\n")
+    .replace(/<[^>]*>/g,"");
+  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
+}
+
+/* ===== EVENTOS ===== */
+const kmInput=document.getElementById("km");
+btnCalc.onclick=calcular;
+btnMaps.onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
+btnWaze.onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+renderHist();
+</script>
+</body>
+</html>
