@@ -5,78 +5,26 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Comprovante de Corrida — Moto Táxi Adriano</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f0f0f">
 
 <style>
 :root{
-  --bg:#0f0f0f;
-  --card:#1a1a1a;
-  --muted:#bbb;
-  --accent:#19c23b;
-  --text:#fff
+  --bg:#0f0f0f;--card:#1a1a1a;--muted:#bbb;--accent:#19c23b;--text:#fff
 }
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Inter,Arial,Helvetica,sans-serif;
-  margin:0;
-  padding:18px
-}
-.wrap{max-width:820px;margin:0 auto}
-h1{font-size:20px;margin:0 0 12px}
-label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
-input,select{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#141414;
-  color:#fff;
-  font-size:16px
-}
-.btn{
-  padding:12px 18px;
-  border-radius:12px;
-  border:none;
-  font-weight:700;
-  cursor:pointer
-}
+body{background:var(--bg);color:var(--text);font-family:Arial;margin:0;padding:18px}
+.wrap{max-width:820px;margin:auto}
+h1{font-size:20px}
+label{display:block;color:var(--muted);margin-top:12px}
+input,select{width:100%;padding:12px;border-radius:10px;border:none;background:#141414;color:#fff}
+.btn{padding:12px;border-radius:12px;border:none;font-weight:bold}
 .btn-green{background:var(--accent);color:#fff}
-.result{
-  font-size:56px;
-  color:#00ff66;
-  text-align:center;
-  margin:20px 0;
-  font-weight:800
-}
-.card{
-  background:var(--card);
-  padding:16px;
-  border-radius:14px;
-  margin-top:12px;
-  color:var(--muted)
-}
+.result{font-size:56px;color:#00ff66;text-align:center;margin:20px 0}
+.card{background:var(--card);padding:16px;border-radius:14px;margin-top:12px}
 .small{font-size:13px;white-space:pre-line}
-.qrwrap{
-  margin:14px auto;
-  border-radius:14px;
-  padding:12px;
-  background:#fff;
-  width:320px;
-  height:320px;
-  display:flex;
-  align-items:center;
-  justify-content:center
-}
-.qrimg{max-width:100%;max-height:100%}
-footer{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:18px;
-  text-align:center
-}
+.qrwrap{background:#fff;padding:12px;border-radius:14px;width:320px;height:320px;margin:auto}
+.qrimg{width:100%}
+footer{text-align:center;color:#bbb;font-size:13px;margin-top:20px}
 </style>
 </head>
 
@@ -88,31 +36,29 @@ footer{
 <div class="card">
 <b>Adriano Alves de Oliveira Souza</b><br>
 📞 86981291332<br>
-🏍️ Honda CG 125 Fan — Preta • Placa: QRP5G89<br>
+🏍️ Honda CG 125 Fan — Preta • Placa QRP5G89<br>
 PIX: <b>+5586981291332</b>
 </div>
 
 <label>Tipo de tarifa</label>
 <select id="tarifaTipo">
-  <option value="dia">Tarifa Dia — R$ 3,00 / km R$ 1,50</option>
-  <option value="noite">Tarifa Noite — R$ 3,00 / km R$ 1,60</option>
+<option value="dia">Tarifa Dia — R$ 3,00 / km R$ 1,50</option>
+<option value="noite">Tarifa Noite — R$ 3,00 / km R$ 1,60</option>
 </select>
 
-<label>Destino (obrigatório)</label>
-<input id="destino" placeholder="Ex: Av. Frei Serafim">
+<label>Destino</label>
+<input id="destino">
 
 <label>Distância (KM)</label>
-<input id="km" placeholder="Ex: 2.2">
+<input id="km">
 
-<button class="btn btn-green" id="btnCalc">Calcular & Gerar</button>
+<button class="btn btn-green" onclick="calcular()">Calcular & Gerar</button>
 
 <div id="resultado" class="result">R$ 0,00</div>
 <div id="detalhes" class="card small"></div>
 
-<h3 style="text-align:center;margin-top:18px">PIX (valor automático)</h3>
-<div class="qrwrap">
-  <img id="qrImg" class="qrimg">
-</div>
+<h3 style="text-align:center">PIX (valor automático)</h3>
+<div class="qrwrap"><img id="qrImg" class="qrimg"></div>
 
 <div class="card small">
 <h3>Histórico de Corridas</h3>
@@ -120,109 +66,83 @@ PIX: <b>+5586981291332</b>
 <button onclick="limparHistorico()">Limpar histórico</button>
 </div>
 
-<button onclick="compartilhar()" class="btn btn-green">📲 Enviar WhatsApp</button>
+<button class="btn btn-green" onclick="compartilhar()">📲 Enviar WhatsApp</button>
 
-<footer>Gerado por Moto Táxi Adriano — segurança para motorista e passageiro</footer>
+<footer>Gerado por Moto Táxi Adriano</footer>
 </div>
 
 <script>
-const HIST_KEY = "moto_taxi_hist";
+const HIST_KEY="moto_taxi_hist_v2"; // <- força reset antigo
 
-const MOTO_MODELO = "Honda CG 125 Fan";
-const MOTO_COR = "Preta";
-const MOTO_PLACA = "QRP5G89";
-
-const TARIFAS = {
-  dia:{nome:"Tarifa Dia (Bandeira Verde)",base:3.00,km:1.50,min:6.00},
-  noite:{nome:"Tarifa Noite (Bandeira Vermelha)",base:3.00,km:1.60,min:7.00}
+const TARIFAS={
+dia:{nome:"Tarifa Dia (Bandeira Verde)",base:3,km:1.5,min:6},
+noite:{nome:"Tarifa Noite (Bandeira Vermelha)",base:3,km:1.6,min:7}
 };
 
-function arred10(v){ return Math.ceil(v*10)/10; }
+function arred10(v){return Math.ceil(v*10)/10}
 
-function gerarPIX(valor){
-  const payload = "PIX-"+valor;
-  qrImg.src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=" +
-    encodeURIComponent(payload);
+function gerarPIX(v){
+qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent("PIX-"+v)
 }
 
 function calcular(){
-  if(!destino.value){ alert("Informe o destino"); return; }
+if(!destino.value)return alert("Informe o destino");
+const t=TARIFAS[tarifaTipo.value];
+const kmv=parseFloat(km.value.replace(",","."))||0;
+const data=new Date().toLocaleString("pt-BR");
+const total=kmv>0&&kmv<=0.9?t.min:arred10(t.base+kmv*t.km);
 
-  const tipo = tarifaTipo.value;
-  const kmVal = parseFloat((km.value||"0").replace(",","."));
-  const t = TARIFAS[tipo];
-  const dataHora = new Date().toLocaleString("pt-BR");
-
-  let total = kmVal > 0 && kmVal <= 0.9
-    ? t.min
-    : arred10(t.base + (kmVal * t.km));
-
-  const detalheTecnico =
+const visor=
 `Destino: ${destino.value}
-Data: ${dataHora}
+Data: ${data}
 
 ${t.nome}
 Bandeira: R$ ${t.base.toFixed(2)}
-Distância: ${kmVal.toFixed(2)} km × R$ ${t.km.toFixed(2)}
+Distância: ${kmv.toFixed(2)} km × R$ ${t.km.toFixed(2)}
 Total final: R$ ${total.toFixed(2)}
 
-Moto: ${MOTO_MODELO}
-Cor: ${MOTO_COR}
-Placa: ${MOTO_PLACA}`;
+Moto: Honda CG 125 Fan
+Placa: QRP5G89`;
 
-  const recibo =
+const recibo=
 `🧾 RECIBO DIGITAL — MOTO TÁXI ADRIANO
 
 Destino: ${destino.value}
-Data: ${dataHora}
+Data: ${data}
 
 Valor pago: R$ ${total.toFixed(2)}
 
-💳 Pagamento recebido via PIX
+💳 Pagamento confirmado via PIX
 📲 Chave: +5586981291332
 
 🙏 Obrigado pela confiança!
 Boa viagem 🚀`;
 
-  resultado.innerText = "R$ " + total.toFixed(2);
-  detalhes.innerText = detalheTecnico;
+resultado.innerText="R$ "+total.toFixed(2);
+detalhes.innerText=visor;
+gerarPIX(total);
 
-  gerarPIX(total);
-  salvarHistorico(total, recibo);
-}
-
-function salvarHistorico(valor, recibo){
-  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  h.unshift({valor, recibo});
-  localStorage.setItem(HIST_KEY, JSON.stringify(h));
-  renderHist();
+const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+h.unshift({valor:total,recibo});
+localStorage.setItem(HIST_KEY,JSON.stringify(h));
+renderHist();
 }
 
 function renderHist(){
-  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  hist.innerHTML = h.map(i=>`
-<div class="card small">
-${i.recibo}
-
-Total: R$ ${i.valor.toFixed(2)}
-</div>`).join("");
+const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+hist.innerHTML=h.map(i=>`<div class="card small">${i.recibo}</div>`).join("");
 }
 
 function limparHistorico(){
-  localStorage.removeItem(HIST_KEY);
-  renderHist();
+localStorage.removeItem(HIST_KEY);renderHist();
 }
 
 function compartilhar(){
-  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
-  if(!h) return;
-  window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(h.recibo));
+const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
+if(h)window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(h.recibo));
 }
 
-btnCalc.onclick = calcular;
 renderHist();
 </script>
-
 </body>
-       </html>
+</html>
