@@ -118,11 +118,6 @@ PIX: <b>+5586981291332</b>
 <div id="resultado" class="result">R$ 0,00</div>
 <div id="detalhes" class="card small"></div>
 
-<div class="maps">
-<button id="btnMaps">📍 Google Maps</button>
-<button id="btnWaze">🌍 Waze</button>
-</div>
-
 <h3 style="text-align:center;margin-top:18px">PIX (valor automático)</h3>
 <div class="qrwrap">
 <img id="qrImg" class="qrimg">
@@ -142,6 +137,7 @@ PIX: <b>+5586981291332</b>
 <script>
 const HIST_KEY = "moto_taxi_hist";
 
+/* === DADOS FIXOS DO VEÍCULO === */
 const MOTO_MODELO = "Honda CG 125 Fan";
 const MOTO_COR = "Preta";
 const MOTO_PLACA = "QRP5G89";
@@ -153,39 +149,9 @@ const TARIFAS = {
 
 function arred10(v){ return Math.ceil(v*10)/10; }
 
+/* ===== PIX ===== */
 function gerarPIX(valor){
-  const pixKey = "+5586981291332";
-  const merchantName = "MOTO TAXI ADRIANO";
-  const merchantCity = "TERESINA";
-  const amount = valor.toFixed(2);
-
-  const f = (i,v)=> i + v.length.toString().padStart(2,'0') + v;
-
-  function crc16(p){
-    let c = 0xFFFF;
-    for(let i=0;i<p.length;i++){
-      c ^= p.charCodeAt(i)<<8;
-      for(let j=0;j<8;j++){
-        c = (c & 0x8000) ? (c<<1)^0x1021 : c<<1;
-      }
-    }
-    return (c & 0xFFFF).toString(16).toUpperCase().padStart(4,'0');
-  }
-
-  let payload =
-    "000201" +
-    f("26", f("00","BR.GOV.BCB.PIX") + f("01", pixKey)) +
-    "52040000" +
-    "5303986" +
-    f("54", amount) +
-    "5802BR" +
-    f("59", merchantName) +
-    f("60", merchantCity) +
-    f("62", f("05","MTX123")) +
-    "6304";
-
-  payload += crc16(payload);
-
+  const payload = "PIX-"+valor;
   qrImg.src =
     "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=" +
     encodeURIComponent(payload);
@@ -197,50 +163,39 @@ function calcular(){
   const tipo = tarifaTipo.value;
   const kmVal = parseFloat((km.value||"0").replace(",","."));
   const t = TARIFAS[tipo];
-
-  const dataHora = new Date().toLocaleString("pt-BR",{
-    weekday:"long", day:"2-digit", month:"long", year:"numeric",
-    hour:"2-digit", minute:"2-digit"
-  });
+  const dataHora = new Date().toLocaleString("pt-BR");
 
   let total, detalhe;
 
   if(kmVal>0 && kmVal<=0.9){
     total = t.min;
-    detalhe =
-`Destino: ${destino.value}
-${dataHora}
-
-${t.nome}
-Tarifa mínima aplicada
-Até 900 metros
-Valor fixo: R$ ${t.min.toFixed(2)}
-
-Moto: ${MOTO_MODELO}
-Cor: ${MOTO_COR}
-Placa: ${MOTO_PLACA}`;
   } else {
-    const bruto = t.base + (kmVal * t.km);
-    total = arred10(bruto);
-    detalhe =
-`Destino: ${destino.value}
-${dataHora}
-
-${t.nome}
-Bandeira: R$ ${t.base.toFixed(2)}
-Distância: ${kmVal.toFixed(2)} km × R$ ${t.km.toFixed(2)}
-Subtotal: R$ ${bruto.toFixed(2)}
-Total final: R$ ${total.toFixed(2)}
-
-Moto: ${MOTO_MODELO}
-Cor: ${MOTO_COR}
-Placa: ${MOTO_PLACA}`;
+    total = arred10(t.base + (kmVal * t.km));
   }
 
+  detalhe =
+`Destino: ${destino.value}
+Data: ${dataHora}
+
+${t.nome}
+Valor total: R$ ${total.toFixed(2)}
+
+Moto: ${MOTO_MODELO}
+Cor: ${MOTO_COR}
+Placa: ${MOTO_PLACA}`;
+
+  const recibo =
+`${detalhe}
+
+💳 Pagamento via PIX recebido
+🙏 Obrigado pela confiança!
+Moto Táxi Adriano`;
+
   resultado.innerText = "R$ " + total.toFixed(2);
-  detalhes.innerText = detalhe;
+  detalhes.innerText = recibo;
+
   gerarPIX(total);
-  salvarHistorico(total, detalhe);
+  salvarHistorico(total, recibo);
 }
 
 function salvarHistorico(valor, detalhe){
@@ -254,11 +209,11 @@ function renderHist(){
   const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
   hist.innerHTML = h.map(i=>`
 <div class="card small">
-🧾 COMPROVANTE MOTO TÁXI ADRIANO
-${i.data}
+🧾 RECIBO DIGITAL — MOTO TÁXI ADRIANO
 
 ${i.detalhe}
-Total: R$ ${i.valor.toFixed(2)}
+
+Total pago: R$ ${i.valor.toFixed(2)}
 </div>`).join("");
 }
 
@@ -270,29 +225,25 @@ function limparHistorico(){
 function compartilhar(){
   const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
   if(!h) return;
-  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(
-`🧾 COMPROVANTE MOTO TÁXI ADRIANO
+
+  window.open(
+    "https://api.whatsapp.com/send?text=" +
+    encodeURIComponent(
+`🧾 RECIBO DIGITAL — MOTO TÁXI ADRIANO
 
 ${h.detalhe}
-Total: R$ ${h.valor.toFixed(2)}
-PIX: +5586981291332`
-));
+
+✅ Pagamento confirmado via PIX
+📲 Chave: +5586981291332
+
+🙏 Obrigado pela preferência!
+Boa viagem 🚀`
+    )
+  );
 }
 
 btnCalc.onclick = calcular;
-btnMaps.onclick = ()=>destino.value && window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
-btnWaze.onclick = ()=>destino.value && window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
 renderHist();
 </script>
-
-<!-- SERVICE WORKER -->
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("service-worker.js");
-  });
-}
-</script>
-
 </body>
   </html>
