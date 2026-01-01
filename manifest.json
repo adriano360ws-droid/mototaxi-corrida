@@ -1,10 +1,13 @@
 {
   "name": "Moto Táxi Adriano",
   "short_name": "Moto Táxi",
-  "start_url": "./",
+  "description": "Aplicativo de corridas - Moto Táxi Adriano",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f0f",
-  "theme_color": "#19c23b",
+  "theme_color": "#0f0f0f",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon-192.png",
