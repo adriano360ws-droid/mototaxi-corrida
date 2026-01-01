@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Comprovante de Corrida — Moto Táxi Adriano</title>
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f0f">
+
 <style>
 :root{
   --bg:#0f0f0f;
@@ -138,7 +142,6 @@ PIX: <b>+5586981291332</b>
 <script>
 const HIST_KEY = "moto_taxi_hist";
 
-/* === DADOS FIXOS DO VEÍCULO === */
 const MOTO_MODELO = "Honda CG 125 Fan";
 const MOTO_COR = "Preta";
 const MOTO_PLACA = "QRP5G89";
@@ -150,7 +153,6 @@ const TARIFAS = {
 
 function arred10(v){ return Math.ceil(v*10)/10; }
 
-/* ===== PIX PADRÃO BANCO CENTRAL ===== */
 function gerarPIX(valor){
   const pixKey = "+5586981291332";
   const merchantName = "MOTO TAXI ADRIANO";
@@ -282,5 +284,15 @@ btnMaps.onclick = ()=>destino.value && window.open("https://www.google.com/maps/
 btnWaze.onclick = ()=>destino.value && window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
 renderHist();
 </script>
+
+<!-- SERVICE WORKER -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js");
+  });
+}
+</script>
+
 </body>
   </html>
