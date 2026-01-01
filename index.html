@@ -54,7 +54,7 @@ input,select{
   margin-top:12px;
   color:var(--muted)
 }
-.small{font-size:13px}
+.small{font-size:13px;white-space:pre-line}
 .maps{display:flex;gap:10px;margin-top:14px}
 .maps button{
   flex:1;
@@ -82,7 +82,6 @@ footer{
   margin-top:18px;
   text-align:center
 }
-hr{border:none;border-top:1px solid #333;margin:10px 0}
 </style>
 </head>
 
@@ -101,14 +100,14 @@ PIX: <b>+5586981291332</b>
 <label>Tipo de tarifa</label>
 <select id="tarifaTipo">
   <option value="dia">Tarifa Dia — R$ 3,00 / km R$ 1,50</option>
-  <option value="noite">Tarifa Noite — R$ 3,50 / km R$ 1,75</option>
+  <option value="noite">Tarifa Noite — R$ 3,00 / km R$ 1,60</option>
 </select>
 
 <label>Destino (obrigatório)</label>
-<input id="destino">
+<input id="destino" placeholder="Ex: Av. Frei Serafim">
 
 <label>Distância (KM)</label>
-<input id="km">
+<input id="km" placeholder="Ex: 2.2">
 
 <button class="btn btn-green" id="btnCalc">Calcular & Gerar</button>
 
@@ -133,131 +132,132 @@ PIX: <b>+5586981291332</b>
 
 <button onclick="compartilhar()" class="btn btn-green">📲 Enviar WhatsApp</button>
 
-<footer>Gerado por Moto Táxi — envie ao passageiro só por mensagem (segurança)</footer>
+<footer>Gerado por Moto Táxi Adriano — segurança para motorista e passageiro</footer>
 </div>
 
 <script>
-/* ===== CONFIGURAÇÕES ===== */
-const PIX_KEY_RAW = "86981291332";
-const RECEIVER_NAME = "MOTO TAXI ADRIANO";
-const CITY = "TERESINA";
 const HIST_KEY = "moto_taxi_hist";
 
+/* === DADOS FIXOS DO VEÍCULO === */
+const MOTO_MODELO = "Honda CG 125 Fan";
+const MOTO_COR = "Preta";
+const MOTO_PLACA = "QRP5G89";
+
 const TARIFAS = {
-  dia:{nome:"Tarifa Dia",base:3.00,km:1.50,min:6.00},
-  noite:{nome:"Tarifa Noite",base:3.50,km:1.75,min:7.00}
+  dia:{nome:"Tarifa Dia (Bandeira Verde)",base:3.00,km:1.50,min:6.00},
+  noite:{nome:"Tarifa Noite (Bandeira Vermelha)",base:3.00,km:1.60,min:7.00}
 };
 
-/* ===== UTIL ===== */
 function arred10(v){ return Math.ceil(v*10)/10; }
 
-function chavePixNormalizada(){
-  return PIX_KEY_RAW.startsWith("55")
-    ? "+" + PIX_KEY_RAW
-    : "+55" + PIX_KEY_RAW;
-}
-
-/* ===== CRC16 PIX ===== */
-function crc16(payload){
-  let crc=0xFFFF;
-  for(let i=0;i<payload.length;i++){
-    crc^=payload.charCodeAt(i)<<8;
-    for(let j=0;j<8;j++){
-      crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;
-    }
-  }
-  return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,"0");
-}
-
-/* ===== PIX ===== */
+/* ===== PIX PADRÃO BANCO CENTRAL ===== */
 function gerarPIX(valor){
-  const v=valor.toFixed(2);
-  const nome=RECEIVER_NAME.substring(0,25);
-  const cidade=CITY.substring(0,15);
-  const chave=chavePixNormalizada();
-  const campo=(id,val)=>id+val.length.toString().padStart(2,"0")+val;
+  const pixKey = "+5586981291332";
+  const merchantName = "MOTO TAXI ADRIANO";
+  const merchantCity = "TERESINA";
+  const amount = valor.toFixed(2);
 
-  let payload="000201"+
-    campo("26",campo("00","BR.GOV.BCB.PIX")+campo("01",chave))+
-    "52040000"+
-    "5303986"+
-    campo("54",v)+
-    "5802BR"+
-    campo("59",nome)+
-    campo("60",cidade)+
-    campo("62",campo("05","***"))+
+  const f = (i,v)=> i + v.length.toString().padStart(2,'0') + v;
+
+  function crc16(p){
+    let c = 0xFFFF;
+    for(let i=0;i<p.length;i++){
+      c ^= p.charCodeAt(i)<<8;
+      for(let j=0;j<8;j++){
+        c = (c & 0x8000) ? (c<<1)^0x1021 : c<<1;
+      }
+    }
+    return (c & 0xFFFF).toString(16).toUpperCase().padStart(4,'0');
+  }
+
+  let payload =
+    "000201" +
+    f("26", f("00","BR.GOV.BCB.PIX") + f("01", pixKey)) +
+    "52040000" +
+    "5303986" +
+    f("54", amount) +
+    "5802BR" +
+    f("59", merchantName) +
+    f("60", merchantCity) +
+    f("62", f("05","MTX123")) +
     "6304";
 
-  payload+=crc16(payload);
-  qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent(payload);
+  payload += crc16(payload);
+
+  qrImg.src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=" +
+    encodeURIComponent(payload);
 }
 
-/* ===== COMPROVANTE ===== */
-function textoComprovante(h){
-  return `
-🧾 COMPROVANTE MOTO TÁXI ADRIANO<br><br>
-<b>${h.data}</b><br>
-Destino: ${h.destino}<br>
-Adriano Alves de Oliveira Souza<br>
-Tel: 86981291332<br>
-Placa: QRP5G89<br><br>
-${h.detalhe}<br>
-<b>Total: R$ ${h.valor.toFixed(2)}</b><br>
-PIX: ${chavePixNormalizada()}
-`;
-}
-
-/* ===== CÁLCULO ===== */
 function calcular(){
-  const tipo=tarifaTipo.value;
-  const km=parseFloat((kmInput.value||"0").replace(",","."));
-  const destinoTxt=destino.value||"Não informado";
-  const t=TARIFAS[tipo];
-  let total,detalhe;
+  if(!destino.value){ alert("Informe o destino"); return; }
 
-  if(km>0 && km<=0.9){
-    total=t.min;
-    detalhe=`Tarifa mínima aplicada<br>
-    Até 900 metros<br>
-    ${t.nome}<br>
-    Valor fixo: R$ ${t.min.toFixed(2)}<br>
-    Passando de 900 m inicia tarifa normal`;
-  }else{
-    const bruto=t.base+(km*t.km);
-    total=arred10(bruto);
-    detalhe=`${t.nome}<br>
-    Base: R$ ${t.base.toFixed(2)}<br>
-    Distância: ${km.toFixed(2)} km × R$ ${t.km.toFixed(2)}<br>
-    Subtotal: R$ ${bruto.toFixed(2)}<br>
-    Arredondamento: R$ ${(total-bruto).toFixed(2)}<br>
-    Total final: R$ ${total.toFixed(2)}`;
+  const tipo = tarifaTipo.value;
+  const kmVal = parseFloat((km.value||"0").replace(",","."));
+  const t = TARIFAS[tipo];
+
+  const dataHora = new Date().toLocaleString("pt-BR",{
+    weekday:"long", day:"2-digit", month:"long", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
+
+  let total, detalhe;
+
+  if(kmVal>0 && kmVal<=0.9){
+    total = t.min;
+    detalhe =
+`Destino: ${destino.value}
+${dataHora}
+
+${t.nome}
+Tarifa mínima aplicada
+Até 900 metros
+Valor fixo: R$ ${t.min.toFixed(2)}
+
+Moto: ${MOTO_MODELO}
+Cor: ${MOTO_COR}
+Placa: ${MOTO_PLACA}`;
+  } else {
+    const bruto = t.base + (kmVal * t.km);
+    total = arred10(bruto);
+    detalhe =
+`Destino: ${destino.value}
+${dataHora}
+
+${t.nome}
+Bandeira: R$ ${t.base.toFixed(2)}
+Distância: ${kmVal.toFixed(2)} km × R$ ${t.km.toFixed(2)}
+Subtotal: R$ ${bruto.toFixed(2)}
+Total final: R$ ${total.toFixed(2)}
+
+Moto: ${MOTO_MODELO}
+Cor: ${MOTO_COR}
+Placa: ${MOTO_PLACA}`;
   }
 
-  resultado.innerText="R$ "+total.toFixed(2);
-  detalhes.innerHTML=detalhe;
+  resultado.innerText = "R$ " + total.toFixed(2);
+  detalhes.innerText = detalhe;
   gerarPIX(total);
-  salvarHistorico(total,destinoTxt,detalhe);
+  salvarHistorico(total, detalhe);
 }
 
-/* ===== HISTÓRICO ===== */
-function salvarHistorico(valor,destino,detalhe){
-  const d=new Date();
-  const registro={
-    data:d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+
-         " – "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
-    destino,valor,detalhe
-  };
-  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  h.unshift(registro);
-  localStorage.setItem(HIST_KEY,JSON.stringify(h));
+function salvarHistorico(valor, detalhe){
+  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  h.unshift({data:new Date().toLocaleString("pt-BR"),valor,detalhe});
+  localStorage.setItem(HIST_KEY, JSON.stringify(h));
   renderHist();
 }
 
 function renderHist(){
-  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  hist.innerHTML=h.length
-    ? h.map(i=>`<div class="card small">${textoComprovante(i)}</div>`).join("")
-    : "<i>Nenhuma corrida registrada</i>";
+  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  hist.innerHTML = h.map(i=>`
+<div class="card small">
+🧾 COMPROVANTE MOTO TÁXI ADRIANO
+${i.data}
+
+${i.detalhe}
+Total: R$ ${i.valor.toFixed(2)}
+</div>`).join("");
 }
 
 function limparHistorico(){
@@ -265,22 +265,22 @@ function limparHistorico(){
   renderHist();
 }
 
-/* ===== WHATSAPP ===== */
 function compartilhar(){
-  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
+  const h = JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
   if(!h) return;
-  const texto=textoComprovante(h)
-    .replace(/<br>/g,"\n")
-    .replace(/<[^>]*>/g,"");
-  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
+  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(
+`🧾 COMPROVANTE MOTO TÁXI ADRIANO
+
+${h.detalhe}
+Total: R$ ${h.valor.toFixed(2)}
+PIX: +5586981291332`
+));
 }
 
-/* ===== EVENTOS ===== */
-const kmInput=document.getElementById("km");
-btnCalc.onclick=calcular;
-btnMaps.onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
-btnWaze.onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+btnCalc.onclick = calcular;
+btnMaps.onclick = ()=>destino.value && window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
+btnWaze.onclick = ()=>destino.value && window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
 renderHist();
 </script>
 </body>
-</html>
+  </html>
