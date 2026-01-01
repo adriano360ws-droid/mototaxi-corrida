@@ -104,19 +104,24 @@ Total final: R$ ${total.toFixed(2)}
 Moto: Honda CG 125 Fan
 Placa: QRP5G89`;
 
-const recibo=
-`🧾 RECIBO DIGITAL — MOTO TÁXI ADRIANO
+const recibo = `🧾 RECIBO DIGITAL — MOTO TÁXI ADRIANO
 
 Destino: ${destino.value}
-Data: ${data}
+Data e hora: ${data}
 
-Valor pago: R$ ${total.toFixed(2)}
+Tarifa aplicada:
+${t.nome}
 
-💳 Pagamento confirmado via PIX
-📲 Chave: +5586981291332
+Valor final: R$ ${total.toFixed(2)}
+
+Moto: Honda CG 125 Fan
+Cor: Preta
+Placa: QRP5G89
+
+💳 Pagamento via PIX recebido
 
 🙏 Obrigado pela confiança!
-Boa viagem 🚀`;
+Segurança e profissionalismo em cada corrida.`;
 
 resultado.innerText="R$ "+total.toFixed(2);
 detalhes.innerText=visor;
