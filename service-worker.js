@@ -1,4 +1,4 @@
-const CACHE_NAME = "moto-taxi-adriano-v3";
+const CACHE_NAME = "moto-taxi-adriano-v4";
 
 const FILES_TO_CACHE = [
   "./",
