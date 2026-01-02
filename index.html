@@ -120,8 +120,13 @@ function gerarPIX(valor){
   payload += crc16(payload);
 
   document.getElementById("qrImg").src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=" +
-    encodeURIComponent(payload);
+  "https://api.qrserver.com/v1/create-qr-code/?" +
+  "size=600x600" +
+  "&margin=20" +
+  "&ecc=L" +
+  "&bgcolor=ffffff" +
+  "&color=000000" +
+  "&data=" + encodeURIComponent(payload);
 }
 
 function calcular(){
@@ -201,3 +206,4 @@ renderHist();
 </script>
 </body>
 </html>
+
