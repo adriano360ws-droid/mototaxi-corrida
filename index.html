@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -81,7 +82,6 @@ const HIST_KEY = "moto_taxi_hist";
 const PIX_KEY = "5586981291332";
 const RECEIVER = "MOTO TAXI ADRIANO";
 const CITY = "TERESINA";
-const TXID = "MTXADRIANO";
 
 const TARIFAS = {
   verde:{nome:"Bandeira Verde",fixo:3,km:1.5,min:6},
@@ -101,13 +101,13 @@ function crc16(payload){
   return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4,"0");
 }
 
-/* ✅ PIX CORRETO — PADRÃO BANCO CENTRAL */
+/* ✅ PIX ESTÁTICO COM VALOR — PADRÃO BANCO CENTRAL */
 function gerarPIX(valor){
   const v = valor.toFixed(2);
   const f = (id,val)=> id + val.length.toString().padStart(2,"0") + val;
 
   let payload =
-    "000201010212" +
+    "000201010211" +
     f("26", f("00","BR.GOV.BCB.PIX") + f("01",PIX_KEY)) +
     "52040000" +
     "5303986" +
@@ -115,7 +115,6 @@ function gerarPIX(valor){
     "5802BR" +
     f("59",RECEIVER.substring(0,25)) +
     f("60",CITY.substring(0,15)) +
-    f("62",f("05",TXID)) +
     "6304";
 
   payload += crc16(payload);
@@ -178,15 +177,21 @@ function renderHist(){
     : "<i>Nenhuma corrida registrada</i>";
 }
 
-function limparHistorico(){localStorage.removeItem(HIST_KEY);renderHist();}
+function limparHistorico(){
+  localStorage.removeItem(HIST_KEY);
+  renderHist();
+}
+
 function compartilhar(){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
   if(h) window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(h.recibo));
 }
+
 function abrirMaps(){
   const d=document.getElementById("destino").value;
   if(d) window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(d));
 }
+
 function abrirWaze(){
   const d=document.getElementById("destino").value;
   if(d) window.open("https://waze.com/ul?q="+encodeURIComponent(d));
