@@ -99,8 +99,8 @@ PIX: <b>+5586981291332</b>
 
 <label>Tipo de tarifa</label>
 <select id="tarifaTipo">
-  <option value="verde">Bandeira Verde — R$ 3,00 + R$ 1,50 / km</option>
-  <option value="vermelha">Bandeira Vermelha — R$ 3,00 + R$ 1,60 / km</option>
+  <option value="verde">🟢 Bandeira Verde — Base R$ 3,00 | Km R$ 1,50</option>
+  <option value="vermelha">🔴 Bandeira Vermelha — Base R$ 3,00 | Km R$ 1,60</option>
 </select>
 
 <label>Destino (obrigatório)</label>
@@ -142,10 +142,20 @@ const RECEIVER_NAME = "MOTO TAXI ADRIANO";
 const CITY = "TERESINA";
 const HIST_KEY = "moto_taxi_hist";
 
-/* ✅ SOMENTE BANDEIRAS */
+/* ===== TARIFAS ===== */
 const TARIFAS = {
-  verde:{nome:"Bandeira Verde",base:3.00,km:1.50,min:6.00},
-  vermelha:{nome:"Bandeira Vermelha",base:3.00,km:1.60,min:6.00}
+  verde:{
+    nome:"Bandeira Verde",
+    base:3.00,
+    km:1.50,
+    min:6.00
+  },
+  vermelha:{
+    nome:"Bandeira Vermelha",
+    base:3.00,
+    km:1.60,
+    min:6.00
+  }
 };
 
 /* ===== UTIL ===== */
@@ -169,7 +179,7 @@ function crc16(payload){
   return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,"0");
 }
 
-/* ===== PIX (NÃO MEXIDO) ===== */
+/* ===== PIX ===== */
 function gerarPIX(valor){
   const v=valor.toFixed(2);
   const nome=RECEIVER_NAME.substring(0,25);
@@ -185,6 +195,7 @@ function gerarPIX(valor){
     "5802BR"+
     campo("59",nome)+
     campo("60",cidade)+
+    campo("62",campo("05","***"))+
     "6304";
 
   payload+=crc16(payload);
@@ -195,23 +206,24 @@ function gerarPIX(valor){
 function calcular(){
   const tipo=tarifaTipo.value;
   const km=parseFloat((document.getElementById("km").value||"0").replace(",","."));
-  const destinoTxt=destino.value||"Não informado";
+  const destinoTxt=document.getElementById("destino").value||"Não informado";
   const t=TARIFAS[tipo];
-  let total,detalhe;
+  let total, detalhe;
 
   if(km>0 && km<=0.9){
     total=t.min;
     detalhe=`Tarifa mínima aplicada<br>
-Até 900 metros<br>
-${t.nome}<br>
-Valor fixo: R$ ${t.min.toFixed(2)}`;
+    Até 900 metros<br>
+    ${t.nome}<br>
+    Valor fixo: R$ ${t.min.toFixed(2)}`;
   }else{
     const bruto=t.base+(km*t.km);
     total=arred10(bruto);
     detalhe=`${t.nome}<br>
-Bandeira: R$ ${t.base.toFixed(2)}<br>
-Distância: ${km.toFixed(2)} km × R$ ${t.km.toFixed(2)}<br>
-Total final: R$ ${total.toFixed(2)}`;
+    Base: R$ ${t.base.toFixed(2)}<br>
+    Distância: ${km.toFixed(2)} km × R$ ${t.km.toFixed(2)}<br>
+    Subtotal: R$ ${bruto.toFixed(2)}<br>
+    Total final: R$ ${total.toFixed(2)}`;
   }
 
   resultado.innerText="R$ "+total.toFixed(2);
@@ -224,8 +236,7 @@ Total final: R$ ${total.toFixed(2)}`;
 function salvarHistorico(valor,destino,detalhe){
   const d=new Date();
   const registro={
-    data:d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"2-digit",year:"numeric"})+
-         " – "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
+    data:d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
     destino,valor,detalhe
   };
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
@@ -237,12 +248,7 @@ function salvarHistorico(valor,destino,detalhe){
 function renderHist(){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
   hist.innerHTML=h.length
-    ? h.map(i=>`<div class="card small">
-<b>${i.data}</b><br>
-Destino: ${i.destino}<br>
-${i.detalhe}<br>
-<b>Total: R$ ${i.valor.toFixed(2)}</b>
-</div>`).join("")
+    ? h.map(i=>`<div class="card small">${i.data}<br>${i.destino}<br><b>R$ ${i.valor.toFixed(2)}</b></div>`).join("")
     : "<i>Nenhuma corrida registrada</i>";
 }
 
@@ -255,22 +261,18 @@ function limparHistorico(){
 function compartilhar(){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
   if(!h) return;
-  const texto=
-`🧾 COMPROVANTE MOTO TÁXI ADRIANO
+  const texto=`🧾 Moto Táxi Adriano
 ${h.data}
 Destino: ${h.destino}
-
-${h.detalhe.replace(/<br>/g,"\n")}
-
 Total: R$ ${h.valor.toFixed(2)}
 PIX: ${chavePixNormalizada()}`;
   window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
 }
 
 /* ===== EVENTOS ===== */
-btnCalc.onclick=calcular;
-btnMaps.onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
-btnWaze.onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+document.getElementById("btnCalc").onclick=calcular;
+document.getElementById("btnMaps").onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
+document.getElementById("btnWaze").onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
 renderHist();
 </script>
 </body>
