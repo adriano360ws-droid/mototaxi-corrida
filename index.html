@@ -262,11 +262,65 @@ function limparHistorico(){
 function compartilhar(){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
   if(!h) return;
-  const texto=`🧾 Moto Táxi Adriano
-${h.data}
-Destino: ${h.destino}
-Total: R$ ${h.valor.toFixed(2)}
-PIX: ${chavePixNormalizada()}`;
+  const agora = new Date();
+const dataHora = agora.toLocaleString("pt-BR", {
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+// informações salvas no histórico
+const valor = h.valor.toFixed(2);
+
+// regras fixas do seu sistema
+const limiteMinimo = 0.9; // 900 metros
+const bandeiraVerdeMin = 6.00;
+const bandeiraVermelhaMin = 7.00;
+
+// texto explicativo padrão (não quebra)
+const texto = `
+🧾 *COMPROVANTE DE CORRIDA – MOTO TÁXI ADRIANO*
+
+📅 ${dataHora}
+
+👤 *Moto Táxi:* Adriano  
+🏍️ *Moto:* Honda CG 125 Fan  
+🎨 *Cor:* Preta  
+🔢 *Placa:* QRP5G89  
+
+📍 *Destino:* ${h.destino}
+
+────────────────────
+💰 *CÁLCULO DA CORRIDA*
+
+🚦 *Bandeira Verde*
+• Tarifa base: R$ 3,00  
+• Valor por km: R$ 1,50  
+• Corridas até 900 metros:  
+👉 *Valor mínimo fixo: R$ 6,00*
+
+🚦 *Bandeira Vermelha*
+• Tarifa base: R$ 3,00  
+• Valor por km: R$ 1,60  
+• Corridas até 900 metros:  
+👉 *Valor mínimo fixo: R$ 7,00*
+
+📌 *Acima de 900 metros o valor é calculado normalmente pela distância percorrida.*
+
+────────────────────
+💵 *VALOR FINAL DA CORRIDA*
+👉 R$ ${valor}
+
+✅ *PIX recebido*
+Pagamento autorizado.
+Corrida paga com sucesso.
+
+🙏 Obrigado pela preferência.
+*Moto Táxi Adriano agradece!*
+`;
   window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
 }
 
@@ -278,5 +332,6 @@ renderHist();
 </script>
 </body>
 </html>
+
 
 
