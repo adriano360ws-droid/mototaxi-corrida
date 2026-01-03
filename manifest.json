@@ -6,8 +6,8 @@
   "start_url": "/mototaxi-corrida/index.html",
   "scope": "/mototaxi-corrida/",
   "display": "standalone",
-  "background_color": "#0f0f0f",
-  "theme_color": "#0f0f0f",
+  "background_color": "#0A3D91",
+"theme_color": "#0A3D91",
   "orientation": "portrait",
   "icons": [
     {
