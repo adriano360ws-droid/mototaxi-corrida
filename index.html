@@ -10,9 +10,9 @@
 :root{
   --bg:#0f0f0f;
   --card:#1a1a1a;
-  --muted:#bbb;
-  --accent:#19c23b;
-  --text:#fff
+  --muted:#bfc7d5;
+  --accent:#0A3D91; /* AZUL PROFISSIONAL */
+  --text:#ffffff;
 }
 body{
   background:var(--bg);
@@ -39,14 +39,18 @@ input,select{
   border:none;
   font-weight:700;
   cursor:pointer
+}.btn-green{
+  background:var(--accent);
+  color:#ffffff;
+  box-shadow:0 6px 14px rgba(10,61,145,0.45);
 }
-.btn-green{background:var(--accent);color:#fff}
-.result{
+
+  .result{
   font-size:56px;
-  color:#00ff66;
+  color:var(--accent);
   text-align:center;
   margin:20px 0;
-  font-weight:800
+  font-weight:800;
 }
 .card{
   background:var(--card);
@@ -59,11 +63,12 @@ input,select{
 .maps{display:flex;gap:10px;margin-top:14px}
 .maps button{
   flex:1;
-  background:#333;
+  background:#243A5E; /* azul escuro elegante */
   border-radius:10px;
   padding:12px;
   border:none;
-  color:#fff
+  color:#ffffff;
+  font-weight:600;
 }
 .qrwrap{
   margin:14px auto;
