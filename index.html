@@ -354,26 +354,41 @@ Corrida paga com sucesso.
   window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
 }
 
-/* ===== EVENTOS ===== */
-document.getElementById("btnCalc").onclick=calcular;
-document.getElementById("btnMaps").onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
-document.getElementById("btnWaze").onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+<script>
+/* ===== SEU CÓDIGO PRINCIPAL ===== */
 
 renderHist();
+
+/* ===== EVENTOS ===== */
+document.getElementById("btnCalc").onclick = calcular;
+
+document.getElementById("btnMaps").onclick = () =>
+  destino.value &&
+  window.open(
+    "https://www.google.com/maps/dir/?api=1&destination=" +
+    encodeURIComponent(destino.value)
+  );
+
+document.getElementById("btnWaze").onclick = () =>
+  destino.value &&
+  window.open(
+    "https://waze.com/ul?q=" +
+    encodeURIComponent(destino.value)
+  );
 </script>
 
-
+<!-- SERVICE WORKER (ÚLTIMA COISA DO HTML) -->
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register(
-    "/mototaxi-corrida/service-worker.js"
+    "/mototaxi-corrida/service-worker.js",
+    { scope: "/mototaxi-corrida/" }
   );
 }
 </script>
+
 </body>
 </html>
-
-
 
 
 
