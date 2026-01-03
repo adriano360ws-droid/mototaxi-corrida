@@ -4,8 +4,8 @@ const FILES_TO_CACHE = [
   "/mototaxi-corrida/",
   "/mototaxi-corrida/index.html",
   "/mototaxi-corrida/manifest.json",
-  "/mototaxi-corrida/icone-192.png",
-  "/mototaxi-corrida/icone-512.png"
+  "/mototaxi-corrida/icon-192.png",
+  "/mototaxi-corrida/icon-512.png"
 ];
 
 /* ===== INSTALL ===== */
