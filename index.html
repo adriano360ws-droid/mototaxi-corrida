@@ -362,14 +362,17 @@ document.getElementById("btnWaze").onclick=()=>destino.value&&window.open("https
 renderHist();
 </script>
 
+
 <script>
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js");
+  navigator.serviceWorker.register(
+    "/mototaxi-corrida/service-worker.js"
+  );
 }
 </script>
-
 </body>
 </html>
+
 
 
 
