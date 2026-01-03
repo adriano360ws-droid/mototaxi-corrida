@@ -358,15 +358,19 @@ Corrida paga com sucesso.
 document.getElementById("btnCalc").onclick=calcular;
 document.getElementById("btnMaps").onclick=()=>destino.value&&window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
 document.getElementById("btnWaze").onclick=()=>destino.value&&window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+
 renderHist();
-<!-- REGISTRO DO SERVICE WORKER -->
+</script>
+
 <script>
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("./service-worker.js");
 }
 </script>
+
 </body>
 </html>
+
 
 
 
