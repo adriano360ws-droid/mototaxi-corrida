@@ -4,14 +4,12 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Comprovante de Corrida — Moto Táxi Adriano</title>
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0A3D91">
+
 <style>
 :root{
   --bg:#0f0f0f;
   --card:#1a1a1a;
-  --muted:#bfc7d5;
-  --accent:#0A3D91; /* AZUL PROFISSIONAL */
+  --accent:#0A3D91;
   --text:#ffffff;
 }
 body{
@@ -21,98 +19,27 @@ body{
   margin:0;
   padding:18px
 }
-.wrap{max-width:820px;margin:0 auto}
-h1{font-size:20px;margin:0 0 12px}
-label{display:block;font-size:14px;color:var(--muted);margin:12px 0 6px}
+.wrap{max-width:100%;margin:0 auto;}
+h1{font-size:20px;margin:0 0 12px;font-weight:800}
+label{display:block;font-size:14px;margin:12px 0 6px;font-weight:700}
 input,select{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#141414;
-  color:#fff;
-  font-size:16px
+  width:100%;padding:12px;border-radius:10px;border:none;
+  background:#141414;color:#fff;font-size:16px
 }
-.btn{
-  padding:12px 18px;
-  border-radius:12px;
-  border:none;
-  font-weight:700;
-  cursor:pointer
-}.btn-green{
-  background:var(--accent);
-  color:#ffffff;
-  box-shadow:0 6px 14px rgba(10,61,145,0.45);
-}
-
-  .result{
-  font-size:72px;
-  color:#ffffff;
-  text-align:center;
-  margin:20px 0;
-  font-weight:800;
-  letter-spacing:-1.5px;
-}
-.card{
-  background:var(--card);
-  padding:16px;
-  border-radius:14px;
-  margin-top:12px;
-  color:var(--muted)
-}
-.small{font-size:13px}
+.btn{padding:12px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer}
+.btn-green{background:var(--accent);color:#fff}
+.result{font-size:72px;text-align:center;margin:20px 0;font-weight:800}
+.card{background:var(--card);padding:16px;border-radius:14px;margin-top:12px}
 .maps{display:flex;gap:10px;margin-top:14px}
 .maps button{
-  flex:1;
-  background:#243A5E; /* azul escuro elegante */
-  border-radius:10px;
-  padding:12px;
-  border:none;
-  color:#ffffff;
-  font-weight:600;
+  flex:1;background:#243A5E;border-radius:10px;padding:12px;border:none;color:#fff
 }
 .qrwrap{
-  margin:14px auto;
-  border-radius:14px;
-  padding:12px;
-  background:#fff;
-  width:320px;
-  height:320px;
-  display:flex;
-  align-items:center;
-  justify-content:center
+  margin:14px auto;border-radius:14px;padding:12px;background:#fff;
+  width:320px;height:320px;display:flex;align-items:center;justify-content:center
 }
 .qrimg{max-width:100%;max-height:100%}
-footer{
-  font-size:13px;
-  color:var(--muted);
-  margin-top:18px;
-  text-align:center
-}/* ===== TEXTO BRANCO FORTE ===== */
-h1{
-  color:#ffffff;
-  font-weight:800;
-}
-
-.card{
-  color:#ffffff;
-  font-weight:600;
-}
-
-.card b{
-  font-weight:800;
-}
-
-label{
-  color:#ffffff;
-  font-weight:700;
-}
-
-select{
-  color:#ffffff;
-  font-weight:700;
-}
-/* ============================= */
+footer{text-align:center;margin-top:18px;font-size:13px}
 </style>
 </head>
 
@@ -125,7 +52,7 @@ select{
 <b>Adriano Alves de Oliveira Souza</b><br>
 📞 86981291332<br>
 🏍️ Honda CG 125 Fan — Preta • Placa: QRP5G89<br>
-PIX: <b>+5586981291332</b>
+PIX: <b>5586981291332</b>
 </div>
 
 <label>Tipo de tarifa</label>
@@ -134,264 +61,236 @@ PIX: <b>+5586981291332</b>
   <option value="vermelha">🔴 Bandeira Vermelha — Base R$ 3,00 | Km R$ 1,60</option>
 </select>
 
-<label>Destino (obrigatório)</label>
+<label>Destino</label>
 <input id="destino">
 
 <label>Distância (KM)</label>
 <input id="km">
 
-<button class="btn btn-green" id="btnCalc">Calcular & Gerar</button>
+<button class="btn btn-green" onclick="calcular()">Calcular & Gerar</button>
 
 <div id="resultado" class="result">R$ 0,00</div>
-<div id="detalhes" class="card small"></div>
+<div id="detalhes" class="card"></div>
 
 <div class="maps">
-<button id="btnMaps">📍 Google Maps</button>
-<button id="btnWaze">🌍 Waze</button>
+  <button onclick="abrirMaps()">📍 Google Maps</button>
+  <button onclick="abrirWaze()">🌍 Waze</button>
 </div>
 
-<h3 style="text-align:center;margin-top:18px">PIX (valor automático)</h3>
+<h3 style="text-align:center">PIX (valor automático)</h3>
 <div class="qrwrap">
-<img id="qrImg" class="qrimg">
+  <img id="qrImg" class="qrimg">
 </div>
 
-<div class="card small">
+<div class="card">
 <h3>Histórico de Corridas</h3>
 <div id="hist"></div>
-<button onclick="limparHistorico()">Limpar histórico</button>
+<button class="btn" onclick="limparHistorico()">🗑️ Limpar histórico</button>
 </div>
 
 <button onclick="compartilhar()" class="btn btn-green">📲 Enviar WhatsApp</button>
 
-<footer>Gerado por Moto Táxi — envie ao passageiro só por mensagem (segurança)</footer>
+<footer>Moto Táxi Adriano</footer>
 </div>
 
 <script>
-/* ===== CONFIGURAÇÕES ===== */
-const PIX_KEY_RAW = "86981291332";
-const RECEIVER_NAME = "MOTO TAXI ADRIANO";
-const CITY = "TERESINA";
-const HIST_KEY = "moto_taxi_hist";
+const HIST_KEY="moto_taxi_hist";
 
-/* ===== TARIFAS ===== */
-const TARIFAS = {
-  verde:{
-    nome:"Bandeira Verde",
-    base:3.00,
-    km:1.50,
-    min:6.00
-  },
-  vermelha:{
-  nome:"Bandeira Vermelha",
-  base:3.00,
-  km:1.60,
-  min:7.00
-}
+const TARIFAS={
+  verde:{base:3,km:1.5,min:6,nome:"Bandeira Verde"},
+  vermelha:{base:3,km:1.6,min:7,nome:"Bandeira Vermelha"}
 };
 
-/* ===== UTIL ===== */
 function arred10(v){ return Math.ceil(v*10)/10; }
 
-function chavePixNormalizada(){
-  return PIX_KEY_RAW.startsWith("55")
-    ? "+" + PIX_KEY_RAW
-    : "+55" + PIX_KEY_RAW;
-}
-
-/* ===== CRC16 PIX ===== */
+/* CRC16 PIX */
 function crc16(payload){
   let crc=0xFFFF;
   for(let i=0;i<payload.length;i++){
-    crc^=payload.charCodeAt(i)<<8;
+    crc ^= payload.charCodeAt(i) << 8;
     for(let j=0;j<8;j++){
-      crc=(crc&0x8000)?(crc<<1)^0x1021:crc<<1;
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : crc << 1;
     }
   }
-  return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,"0");
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4,"0");
 }
 
-/* ===== PIX ===== */
+/* PIX OFICIAL — COM TXID (CAMPO 62) */
 function gerarPIX(valor){
-  const v=valor.toFixed(2);
-  const nome=RECEIVER_NAME.substring(0,25);
-  const cidade=CITY.substring(0,15);
-  const chave=chavePixNormalizada();
-  const campo=(id,val)=>id+val.length.toString().padStart(2,"0")+val;
+  const chave = "+5586981291332";
+  const txid  = "***";
 
-  let payload="000201"+
-    campo("26",campo("00","BR.GOV.BCB.PIX")+campo("01",chave))+
-    "52040000"+
-    "5303986"+
-    campo("54",v)+
-    "5802BR"+
-    campo("59",nome)+
-    campo("60",cidade)+
-    campo("62",campo("05","***"))+
+  function campo(id,v){
+    return id + v.length.toString().padStart(2,"0") + v;
+  }
+
+  let payload =
+    "000201" +
+    campo("26",
+      campo("00","BR.GOV.BCB.PIX") +
+      campo("01",chave) +
+      campo("02","Corrida Moto Taxi")
+    ) +
+    "52040000" +
+    "5303986" +
+    campo("54", valor.toFixed(2)) +
+    "5802BR" +
+    campo("59","MOTO TAXI ADRIANO") +
+    campo("60","TERESINA") +
+    campo("62", campo("05", txid)) +
     "6304";
 
-  payload+=crc16(payload);
-  qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent(payload);
+  payload += crc16(payload);
+
+  document.getElementById("qrImg").src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=" +
+    encodeURIComponent(payload);
 }
 
-/* ===== CÁLCULO ===== */
+/* CALCULAR */
 function calcular(){
-  const tipo=tarifaTipo.value;
-  const km=parseFloat((document.getElementById("km").value||"0").replace(",","."));
-  const destinoTxt=document.getElementById("destino").value||"Não informado";
-  const t=TARIFAS[tipo];
-  let total, detalhe;
+  const t=TARIFAS[tarifaTipo.value];
+  const kmv=parseFloat(km.value.replace(",","."))||0;
 
-  if(km>0 && km<=0.9){
+  let total, regra, detalhe;
+
+  if(kmv<=0.9){
     total=t.min;
-    detalhe=`Tarifa mínima aplicada<br>
-    Até 900 metros<br>
-    ${t.nome}<br>
-    Valor fixo: R$ ${t.min.toFixed(2)}`;
+    regra="minimo";
+    detalhe=`🚦 <b>${t.nome}</b><br>
+• Corridas até 900 metros<br>
+👉 <b>Valor mínimo fixo: R$ ${t.min.toFixed(2)}</b>`;
   }else{
-    const bruto=t.base+(km*t.km);
-    total=arred10(bruto);
-    detalhe=`${t.nome}<br>
-    Base: R$ ${t.base.toFixed(2)}<br>
-    Distância: ${km.toFixed(2)} km × R$ ${t.km.toFixed(2)}<br>
-    Subtotal: R$ ${bruto.toFixed(2)}<br>
-    Total final: R$ ${total.toFixed(2)}`;
+    total=arred10(t.base+(kmv*t.km));
+    regra="normal";
+    detalhe=`🚦 <b>${t.nome}</b><br>
+• Tarifa base: R$ ${t.base.toFixed(2)}<br>
+• Valor por km: R$ ${t.km.toFixed(2)}<br>
+👉 Cálculo: R$ ${t.base.toFixed(2)} + (${kmv} × ${t.km.toFixed(2)})`;
   }
 
   resultado.innerText="R$ "+total.toFixed(2);
   detalhes.innerHTML=detalhe;
   gerarPIX(total);
-  salvarHistorico(total,destinoTxt,detalhe);
+
+  salvarHistorico({
+    valor:total.toFixed(2),
+    tarifa:t.nome,
+    km:kmv,
+    destino:destino.value||"Não informado",
+    regra,
+    data:new Date().toLocaleString("pt-BR")
+  });
 }
 
-/* ===== HISTÓRICO ===== */
-function salvarHistorico(valor,destino,detalhe){
-  const d=new Date();
-  const registro={
-    data:d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}),
-    destino,valor,detalhe
-  };
+/* HISTÓRICO */
+function salvarHistorico(d){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  h.unshift(registro);
+  h.unshift(d);
   localStorage.setItem(HIST_KEY,JSON.stringify(h));
   renderHist();
 }
-
 function renderHist(){
   const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
-  hist.innerHTML=h.length
-    ? h.map(i=>`<div class="card small">${i.data}<br>${i.destino}<br><b>R$ ${i.valor.toFixed(2)}</b></div>`).join("")
-    : "<i>Nenhuma corrida registrada</i>";
+  hist.innerHTML=h.map(i=>`
+  <div style="border-bottom:1px solid #333;margin-bottom:8px">
+    <b>R$ ${i.valor}</b> — ${i.tarifa}<br>
+    📍 ${i.destino}<br>
+    📏 ${i.km} km<br>
+    🕒 ${i.data}
+  </div>`).join("");
 }
-
 function limparHistorico(){
   localStorage.removeItem(HIST_KEY);
   renderHist();
 }
 
-/* ===== WHATSAPP ===== */
+/* MAPAS */
+function abrirMaps(){
+  if(destino.value)
+    window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
+}
+function abrirWaze(){
+  if(destino.value)
+    window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+}
+
+/* WHATSAPP — COMPROVANTE COMPLETO */
 function compartilhar(){
-  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
+  const h = JSON.parse(localStorage.getItem(HIST_KEY) || "[]")[0];
   if(!h) return;
+
+  const t = Object.values(TARIFAS).find(x => x.nome === h.tarifa);
+
   const agora = new Date();
-const dataHora = agora.toLocaleString("pt-BR", {
-  weekday: "long",
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit"
-});
+  const data = agora.toLocaleDateString("pt-BR",{
+    weekday:"long",
+    day:"2-digit",
+    month:"long",
+    year:"numeric"
+  });
+  const hora = agora.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 
-// informações salvas no histórico
-const valor = h.valor.toFixed(2);
+  let detalhesCalculo = "";
 
-// regras fixas do seu sistema
-const limiteMinimo = 0.9; // 900 metros
-const bandeiraVerdeMin = 6.00;
-const bandeiraVermelhaMin = 7.00;
+  if(h.tarifa === "Bandeira Verde"){
+    detalhesCalculo = `
+🚦 *Bandeira Verde*
+• Tarifa base: R$ 3,00
+• Valor por km: R$ 1,50
+${h.regra === "minimo"
+? "• Corridas até 900 metros:\n👉 *Valor mínimo fixo: R$ 6,00*"
+: `👉 Cálculo: R$ 3,00 + (${h.km} km × R$ 1,50)`}`;
+  }
 
-// texto explicativo padrão (não quebra)
-const texto = `
-🧾 *COMPROVANTE DE CORRIDA – MOTO TÁXI ADRIANO*
+  if(h.tarifa === "Bandeira Vermelha"){
+    detalhesCalculo = `
+🚦 *Bandeira Vermelha*
+• Tarifa base: R$ 3,00
+• Valor por km: R$ 1,60
+${h.regra === "minimo"
+? "• Corridas até 900 metros:\n👉 *Valor mínimo fixo: R$ 7,00*"
+: `👉 Cálculo: R$ 3,00 + (${h.km} km × R$ 1,60)`}`;
+  }
 
-📅 ${dataHora}
+  const texto =
+`🧾 *COMPROVANTE DE CORRIDA – MOTO TÁXI ADRIANO*
 
-👤 *Moto Táxi:* Adriano  
-🏍️ *Moto:* Honda CG 125 Fan  
-🎨 *Cor:* Preta  
-🔢 *Placa:* QRP5G89  
+📅 ${data} às ${hora}
+
+👤 *Moto Táxi:* Adriano
+🏍️ *Moto:* Honda CG 125 Fan
+🎨 *Cor:* Preta
+🔢 *Placa:* QRP5G89
 
 📍 *Destino:* ${h.destino}
 
 ────────────────────
 💰 *CÁLCULO DA CORRIDA*
 
-🚦 *Bandeira Verde*
-• Tarifa base: R$ 3,00  
-• Valor por km: R$ 1,50  
-• Corridas até 900 metros:  
-👉 *Valor mínimo fixo: R$ 6,00*
-
-🚦 *Bandeira Vermelha*
-• Tarifa base: R$ 3,00  
-• Valor por km: R$ 1,60  
-• Corridas até 900 metros:  
-👉 *Valor mínimo fixo: R$ 7,00*
+${detalhesCalculo}
 
 📌 *Acima de 900 metros o valor é calculado normalmente pela distância percorrida.*
 
 ────────────────────
 💵 *VALOR FINAL DA CORRIDA*
-👉 R$ ${valor}
+👉 R$ ${h.valor}
 
 ✅ *PIX recebido*
 Pagamento autorizado.
 Corrida paga com sucesso.
 
 🙏 Obrigado pela preferência.
-*Moto Táxi Adriano agradece!*
-`;
-  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
-}
+*Moto Táxi Adriano agradece!*`;
 
-<script>
-/* ===== SEU CÓDIGO PRINCIPAL ===== */
+  window.open(
+    "https://api.whatsapp.com/send?text=" +
+    encodeURIComponent(texto)
+  );
+}
 
 renderHist();
-
-/* ===== EVENTOS ===== */
-document.getElementById("btnCalc").onclick = calcular;
-
-document.getElementById("btnMaps").onclick = () =>
-  destino.value &&
-  window.open(
-    "https://www.google.com/maps/dir/?api=1&destination=" +
-    encodeURIComponent(destino.value)
-  );
-
-document.getElementById("btnWaze").onclick = () =>
-  destino.value &&
-  window.open(
-    "https://waze.com/ul?q=" +
-    encodeURIComponent(destino.value)
-  );
-</script>
-
-<!-- SERVICE WORKER (ÚLTIMA COISA DO HTML) -->
-<script>
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register(
-    "/mototaxi-corrida/service-worker.js",
-    { scope: "/mototaxi-corrida/" }
-  );
-}
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
