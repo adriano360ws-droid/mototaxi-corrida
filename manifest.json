@@ -1,9 +1,11 @@
+
+
 {
   "name": "Moto Táxi Adriano",
   "short_name": "Moto Táxi",
   "description": "Aplicativo de corridas de Moto Táxi com cálculo automático e PIX",
-  "start_url": "/mototaxi-corrida/index.html",
-  "scope": "/mototaxi-corrida/",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0A3D91",
   "theme_color": "#0A3D91",
@@ -11,25 +13,25 @@
 
   "icons": [
     {
-      "src": "/mototaxi-corrida/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/mototaxi-corrida/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/mototaxi-corrida/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/mototaxi-corrida/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
