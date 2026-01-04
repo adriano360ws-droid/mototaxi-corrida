@@ -3,21 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-
 <title>Comprovante de Corrida — Moto Táxi Adriano</title>
 
-<meta name="description" content="Aplicativo de Moto Táxi com cálculo automático de corridas, comprovante digital e pagamento via PIX.">
-
 <meta name="theme-color" content="#0A3D91">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <link rel="manifest" href="manifest.json">
-
-<!-- ÍCONES (PWA BUILDER PARA DE RECLAMAR AQUI) -->
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" sizes="192x192" href="icon-192.png">
+<link rel="icon" sizes="512x512" href="icon-512.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 
 <style>
@@ -41,25 +32,15 @@ input,select{
   width:100%;padding:12px;border-radius:10px;border:none;
   background:#141414;color:#fff;font-size:16px
 }
-.btn{padding:12px 18px;border-radius:12px;border:none;font-weight:700;cursor:pointer}
+.btn{padding:12px 18px;border-radius:12px;border:none;font-weight:700}
 .btn-green{background:var(--accent);color:#fff}
 .result{font-size:72px;text-align:center;margin:20px 0;font-weight:800}
 .card{background:var(--card);padding:16px;border-radius:14px;margin-top:12px}
 .maps{display:flex;gap:10px;margin-top:14px}
-.maps button{
-  flex:1;background:#243A5E;border-radius:10px;padding:12px;border:none;color:#fff
-}
-.qrwrap{
-  margin:14px auto;border-radius:14px;padding:12px;background:#fff;
-  width:320px;height:320px;display:flex;align-items:center;justify-content:center
-}
-.qrimg{max-width:100%;max-height:100%}
+.maps button{flex:1;background:#243A5E;border:none;border-radius:10px;color:#fff;padding:12px}
+.qrwrap{background:#fff;border-radius:14px;padding:12px;margin:14px auto;width:320px;height:320px;display:flex;align-items:center;justify-content:center}
+.qrimg{max-width:100%}
 footer{text-align:center;margin-top:18px;font-size:13px}
-
-/* Fallback display PWA */
-@media all and (display-mode: standalone){
-  body{padding-top:24px}
-}
 </style>
 </head>
 
@@ -71,21 +52,21 @@ footer{text-align:center;margin-top:18px;font-size:13px}
 <div class="card">
 <b>Adriano Alves de Oliveira Souza</b><br>
 📞 86981291332<br>
-🏍️ Honda CG 125 Fan — Preta • Placa: QRP5G89<br>
+🏍️ Honda CG 125 Fan — Preta • Placa QRP5G89<br>
 PIX: <b>5586981291332</b>
 </div>
 
 <label>Tipo de tarifa</label>
 <select id="tarifaTipo">
-  <option value="verde">🟢 Bandeira Verde — Base R$ 3,00 | Km R$ 1,50</option>
-  <option value="vermelha">🔴 Bandeira Vermelha — Base R$ 3,00 | Km R$ 1,60</option>
+  <option value="verde">🟢 Bandeira Verde</option>
+  <option value="vermelha">🔴 Bandeira Vermelha</option>
 </select>
 
 <label>Destino</label>
 <input id="destino">
 
 <label>Distância (KM)</label>
-<input id="km">
+<input id="km" inputmode="decimal">
 
 <button class="btn btn-green" onclick="calcular()">Calcular & Gerar</button>
 
@@ -102,29 +83,119 @@ PIX: <b>5586981291332</b>
   <img id="qrImg" class="qrimg">
 </div>
 
+<!-- 🔹 HISTÓRICO -->
 <div class="card">
-<h3>Histórico de Corridas</h3>
-<div id="hist"></div>
-<button class="btn" onclick="limparHistorico()">🗑️ Limpar histórico</button>
+  <h3>Histórico de Corridas</h3>
+  <div id="hist"></div>
+  <button class="btn" onclick="limparHistorico()">🗑️ Limpar histórico</button>
 </div>
 
-<button onclick="compartilhar()" class="btn btn-green">📲 Enviar WhatsApp</button>
+<button class="btn btn-green" onclick="compartilhar()">📲 Enviar WhatsApp</button>
 
 <footer>Moto Táxi Adriano</footer>
 </div>
 
 <script>
-/* REGISTRO SERVICE WORKER — OBRIGATÓRIO PRA NOTA VERDE */
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
-</script>
+const HIST_KEY="moto_taxi_hist";
 
-<!-- ⚠️ TODO O SEU SCRIPT ORIGINAL ABAIXO — PIX NÃO TOCADO -->
-<script>
-/* TODO O SCRIPT QUE VOCÊ ENVIOU PERMANECE IGUAL */
+const TARIFAS={
+  verde:{base:3,km:1.5,min:6,nome:"Bandeira Verde"},
+  vermelha:{base:3,km:1.6,min:7,nome:"Bandeira Vermelha"}
+};
+
+function arred10(v){ return Math.ceil(v*10)/10; }
+
+/* PIX — NÃO MEXIDO */
+function crc16(payload){
+  let crc=0xFFFF;
+  for(let i=0;i<payload.length;i++){
+    crc ^= payload.charCodeAt(i)<<8;
+    for(let j=0;j<8;j++)
+      crc = (crc&0x8000)?(crc<<1)^0x1021:crc<<1;
+  }
+  return (crc&0xFFFF).toString(16).toUpperCase().padStart(4,"0");
+}
+
+function gerarPIX(valor){
+  const chave="+5586981291332";
+  const txid="***";
+  const campo=(i,v)=>i+v.length.toString().padStart(2,"0")+v;
+
+  let p="000201"+
+    campo("26",campo("00","BR.GOV.BCB.PIX")+campo("01",chave))+
+    "52040000"+"5303986"+
+    campo("54",valor.toFixed(2))+
+    "5802BR"+
+    campo("59","MOTO TAXI ADRIANO")+
+    campo("60","TERESINA")+
+    campo("62",campo("05",txid))+
+    "6304";
+
+  p+=crc16(p);
+  qrImg.src="https://api.qrserver.com/v1/create-qr-code/?size=600x600&data="+encodeURIComponent(p);
+}
+
+function calcular(){
+  const t=TARIFAS[tarifaTipo.value];
+  const kmv=parseFloat(km.value.replace(",","."))||0;
+  let total, detalhe;
+
+  if(kmv<=0.9){
+    total=t.min;
+    detalhe=`${t.nome} — mínimo até 900m`;
+  }else{
+    total=arred10(t.base+(kmv*t.km));
+    detalhe=`${t.nome} — ${kmv} km`;
+  }
+
+  resultado.innerText="R$ "+total.toFixed(2);
+  gerarPIX(total);
+
+  salvarHistorico({
+    valor:total.toFixed(2),
+    tarifa:t.nome,
+    km:kmv,
+    destino:destino.value||"Não informado",
+    data:new Date().toLocaleString("pt-BR")
+  });
+}
+
+function salvarHistorico(d){
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  h.unshift(d);
+  localStorage.setItem(HIST_KEY,JSON.stringify(h));
+  renderHist();
+}
+
+function renderHist(){
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]");
+  hist.innerHTML=h.map(i=>`
+  <div style="border-bottom:1px solid #333;margin-bottom:8px">
+    <b>R$ ${i.valor}</b> — ${i.tarifa}<br>
+    📍 ${i.destino}<br>
+    📏 ${i.km} km<br>
+    🕒 ${i.data}
+  </div>`).join("");
+}
+
+function limparHistorico(){
+  localStorage.removeItem(HIST_KEY);
+  renderHist();
+}
+
+function compartilhar(){}
+
+function abrirMaps(){
+  if(destino.value)
+    window.open("https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(destino.value));
+}
+function abrirWaze(){
+  if(destino.value)
+    window.open("https://waze.com/ul?q="+encodeURIComponent(destino.value));
+}
+
+renderHist();
 </script>
 
 </body>
 </html>
-
