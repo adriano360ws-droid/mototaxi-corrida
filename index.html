@@ -149,14 +149,20 @@ function calcular(){
 👉 Corridas até <b>900 metros</b><br>
 👉 <b>Valor mínimo fixo: R$ ${t.min.toFixed(2)}</b>`;
   }else{
-    total=arred10(t.base+(kmv*t.km));
-    detalheHTML=`
+  const valorKm = kmv * t.km;          // 39 × 1.50 = 58.50
+  const soma = valorKm + t.base;       // 58.50 + 3.00 = 61.50
+  total = arred10(soma);               // arredonda p/ 10 centavos
+
+  detalheHTML = `
 🚦 <b>${t.nome}</b><br>
 • Tarifa base: R$ ${t.base.toFixed(2)}<br>
 • Valor por km: R$ ${t.km.toFixed(2)}<br><br>
+
 👉 Cálculo:<br>
-R$ ${t.base.toFixed(2)} + (${kmv} × R$ ${t.km.toFixed(2)})`;
-  }
+R$ ${t.base.toFixed(2)} + (${kmv} × R$ ${t.km.toFixed(2)}) = R$ ${valorKm.toFixed(2)}<br>
+R$ ${valorKm.toFixed(2)} + R$ ${t.base.toFixed(2)} = <b>R$ ${total.toFixed(2)}</b>
+`;
+}
 
   resultado.innerText="R$ "+total.toFixed(2);
   detalhes.innerHTML=detalheHTML;
@@ -241,3 +247,4 @@ renderHist();
 
 </body>
 </html>
+
