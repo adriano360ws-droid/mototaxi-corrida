@@ -58,8 +58,8 @@ PIX: <b>5586981291332</b>
 
 <label>Tipo de tarifa</label>
 <select id="tarifaTipo">
-  <option value="verde">🟢 Bandeira Verde</option>
-  <option value="vermelha">🔴 Bandeira Vermelha</option>
+  <option value="verde">🟢 Bandeira Verde — Base R$ 3,00 | Km R$ 1,50</option>
+  <option value="vermelha">🔴 Bandeira Vermelha — Base R$ 3,00 | Km R$ 1,60</option>
 </select>
 
 <label>Destino</label>
@@ -83,7 +83,6 @@ PIX: <b>5586981291332</b>
   <img id="qrImg" class="qrimg">
 </div>
 
-<!-- 🔹 HISTÓRICO -->
 <div class="card">
   <h3>Histórico de Corridas</h3>
   <div id="hist"></div>
@@ -138,17 +137,29 @@ function gerarPIX(valor){
 function calcular(){
   const t=TARIFAS[tarifaTipo.value];
   const kmv=parseFloat(km.value.replace(",","."))||0;
-  let total, detalhe;
+  let total=0;
+  let detalheHTML="";
 
   if(kmv<=0.9){
     total=t.min;
-    detalhe=`${t.nome} — mínimo até 900m`;
+    detalheHTML=`
+🚦 <b>${t.nome}</b><br>
+• Tarifa base: R$ ${t.base.toFixed(2)}<br>
+• Valor por km: R$ ${t.km.toFixed(2)}<br><br>
+👉 Corridas até <b>900 metros</b><br>
+👉 <b>Valor mínimo fixo: R$ ${t.min.toFixed(2)}</b>`;
   }else{
     total=arred10(t.base+(kmv*t.km));
-    detalhe=`${t.nome} — ${kmv} km`;
+    detalheHTML=`
+🚦 <b>${t.nome}</b><br>
+• Tarifa base: R$ ${t.base.toFixed(2)}<br>
+• Valor por km: R$ ${t.km.toFixed(2)}<br><br>
+👉 Cálculo:<br>
+R$ ${t.base.toFixed(2)} + (${kmv} × R$ ${t.km.toFixed(2)})`;
   }
 
   resultado.innerText="R$ "+total.toFixed(2);
+  detalhes.innerHTML=detalheHTML;
   gerarPIX(total);
 
   salvarHistorico({
@@ -156,6 +167,7 @@ function calcular(){
     tarifa:t.nome,
     km:kmv,
     destino:destino.value||"Não informado",
+    detalhe:detalheHTML.replace(/<br>/g,"\n"),
     data:new Date().toLocaleString("pt-BR")
   });
 }
@@ -183,7 +195,37 @@ function limparHistorico(){
   renderHist();
 }
 
-function compartilhar(){}
+function compartilhar(){
+  const h=JSON.parse(localStorage.getItem(HIST_KEY)||"[]")[0];
+  if(!h) return;
+
+  const texto=
+`🧾 *COMPROVANTE DE CORRIDA – MOTO TÁXI ADRIANO*
+
+📅 ${h.data}
+
+👤 Moto Táxi: Adriano
+🏍️ Honda CG 125 Fan — Preta
+🔢 Placa: QRP5G89
+
+📍 Destino: ${h.destino}
+
+────────────────────
+💰 *CÁLCULO DA CORRIDA*
+
+${h.detalhe}
+
+────────────────────
+💵 *VALOR FINAL*
+👉 R$ ${h.valor}
+
+✅ PIX recebido
+Corrida paga com sucesso.
+
+🙏 Moto Táxi Adriano agradece!`;
+
+  window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(texto));
+}
 
 function abrirMaps(){
   if(destino.value)
